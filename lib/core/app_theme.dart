@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const primaryGreen = Color(0xFF1B5E20);
-  static const creamWhite = Color(0xFFF9F9F9);
-  static const charcoalGray = Color(0xFF3A3A3A);
-  static const earthOrange = Color(0xFFD97D0D);
+  // Custom colors
+  static const Color softBeige = Color(0xFFFddebf); // #fddebf
+  static const Color earthyBrown = Color(0xFFcd9158); // #cd9158
+  static const Color charcoalGray = Color(0xFF3A3A3A);
 
-  static final theme = ThemeData(
+  static final lightTheme = ThemeData(
     useMaterial3: true,
-    scaffoldBackgroundColor: creamWhite,
+    scaffoldBackgroundColor: softBeige,
     colorScheme: ColorScheme.light(
-      primary: primaryGreen,
-      secondary: earthOrange,
-      background: creamWhite,
+      primary: earthyBrown,
+      secondary: earthyBrown,
+      background: softBeige,
       surface: Colors.white,
       onPrimary: Colors.white,
       onSecondary: Colors.white,
@@ -20,13 +20,13 @@ class AppTheme {
       onBackground: charcoalGray,
     ),
     appBarTheme: const AppBarTheme(
-      backgroundColor: primaryGreen,
+      backgroundColor: earthyBrown,
       foregroundColor: Colors.white,
       elevation: 0,
       centerTitle: true,
     ),
     cardTheme: const CardThemeData(
-  elevation: 2,
+  elevation: 3,
   margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
   shape: RoundedRectangleBorder(
     borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -34,5 +34,18 @@ class AppTheme {
   color: Colors.white,
 ),
 
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: earthyBrown,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    ),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: earthyBrown,
+      foregroundColor: Colors.white,
+    ),
   );
 }

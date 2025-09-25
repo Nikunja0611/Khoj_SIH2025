@@ -20,7 +20,7 @@ class JharkhandTourismApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Jharkhand Tourism',
-      theme: AppTheme.theme,
+      theme: AppTheme.lightTheme,
       home: MainNavigation(),
       debugShowCheckedModeBanner: false,
     );
@@ -33,115 +33,96 @@ class MainNavigation extends StatefulWidget {
 }
 
 class _MainNavigationState extends State<MainNavigation> {
-  int _selectedIndex = 0;
+  Widget _selectedScreen = ExplorePage();
+  String _title = "Explore Jharkhand";
+  bool _isLoggedIn = false;
 
-  final List<Widget> _screens = [
-    ExplorePage(),
-    ItineraryPage(),
-    MarketplacePage(),
-    ARPage(),
-    CommunityPage(),
-    RewardsPage(),
-    SOSPage(),
-    ProfilePage(),
-  ];
 
-  final List<String> _titles = [
-    "Explore Jharkhand",
-    "AI Saathi – Itinerary",
-    "Marketplace",
-    "Immersive AR Experience",
-    "Community",
-    "Rewards",
-    "Emergency SOS",
-    "My Profile",
-  ];
-
-  void _onSelect(int index) {
+  void _onSelect(String title, Widget page) {
     setState(() {
-      _selectedIndex = index;
-      Navigator.pop(context); // close drawer after selection
+      _title = title;
+      _selectedScreen = page; 
     });
+    Navigator.pop(context); // close drawer after selection
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_titles[_selectedIndex])),
+      appBar: AppBar(title: Text(_title)),
       drawer: Drawer(
         child: ListView(
           children: [
             DrawerHeader(
-  decoration: BoxDecoration(
-    color: Theme.of(context).primaryColor,
-  ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      CircleAvatar(
-        radius: 30,
-        backgroundColor: Colors.white,
-        child: Icon(Icons.person, size: 40, color: Theme.of(context).primaryColor),
-      ),
-      const SizedBox(height: 10),
-      const Text(
-        "Welcome, Traveller!",
-        style: TextStyle(color: Colors.white, fontSize: 18),
-      ),
-      const Text(
-        "Explore Jharkhand",
-        style: TextStyle(color: Colors.white70),
-      ),
-    ],
-  ),
-),
-
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.person, size: 40, color: Theme.of(context).primaryColor),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "Welcome, Traveller!",
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                  const Text(
+                    "Explore Jharkhand",
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ],
+              ),
+            ),
             ListTile(
               leading: Icon(Icons.explore),
               title: Text("Explore"),
-              onTap: () => _onSelect(0),
+              onTap: () => _onSelect("Explore Jharkhand", ExplorePage()),
             ),
             ListTile(
               leading: Icon(Icons.schedule),
               title: Text("Itinerary (AI Saathi)"),
-              onTap: () => _onSelect(1),
+              onTap: () => _onSelect("AI Saathi – Itinerary", ItineraryPage()),
             ),
             ListTile(
               leading: Icon(Icons.store),
               title: Text("Marketplace"),
-              onTap: () => _onSelect(2),
+              onTap: () => _onSelect("Marketplace", MarketplacePage()),
             ),
             ListTile(
               leading: Icon(Icons.view_in_ar),
               title: Text("AR / Immersive"),
-              onTap: () => _onSelect(3),
+              onTap: () => _onSelect("Immersive AR Experience", ARPage()),
             ),
             ListTile(
               leading: Icon(Icons.group),
               title: Text("Community"),
-              onTap: () => _onSelect(4),
+              onTap: () => _onSelect("Community", CommunityPage()),
             ),
             ListTile(
               leading: Icon(Icons.star),
               title: Text("Rewards"),
-              onTap: () => _onSelect(5),
+              onTap: () => _onSelect("Rewards", RewardsPage()),
             ),
             Divider(),
             ListTile(
               leading: Icon(Icons.warning, color: Colors.red),
               title: Text("Emergency SOS"),
-              onTap: () => _onSelect(6),
+              onTap: () => _onSelect("Emergency SOS", SOSPage()),
             ),
             Divider(),
             ListTile(
               leading: Icon(Icons.person),
               title: Text("Profile"),
-              onTap: () => _onSelect(7),
+              onTap: () => _onSelect("My Profile", ProfilePage()),
             ),
           ],
         ),
       ),
-      body: _screens[_selectedIndex],
+      body: _selectedScreen,
     );
   }
 }
