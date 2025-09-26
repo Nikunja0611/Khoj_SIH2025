@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'core/app_theme.dart';
+import 'providers/ai_saathi_provider.dart';
 
 // Import pages
 import 'features/explore/explore_page.dart';
@@ -18,11 +20,16 @@ void main() {
 class JharkhandTourismApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Jharkhand Tourism',
-      theme: AppTheme.theme,
-      home: MainNavigation(),
-      debugShowCheckedModeBanner: false,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AISaathiProvider()),
+      ],
+      child: MaterialApp(
+        title: 'Jharkhand Tourism',
+        theme: AppTheme.theme,
+        home: MainNavigation(),
+        debugShowCheckedModeBanner: false,
+      ),
     );
   }
 }

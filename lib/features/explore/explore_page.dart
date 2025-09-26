@@ -5,17 +5,17 @@ class ExplorePage extends StatelessWidget {
     {
       "name": "Netarhat",
       "desc": "Queen of Chotanagpur",
-      "img": "https://upload.wikimedia.org/wikipedia/commons/2/28/Netarhat_sunrise.jpg"
+      "img": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800"
     },
     {
       "name": "Betla National Park",
       "desc": "Wildlife safari & nature trails",
-      "img": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Betla.jpg"
+      "img": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800"
     },
     {
       "name": "Hundru Falls",
       "desc": "Iconic scenic waterfall",
-      "img": "https://upload.wikimedia.org/wikipedia/commons/0/0d/Hundru_falls.jpg"
+      "img": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800"
     },
   ];
 
@@ -29,7 +29,31 @@ class ExplorePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.network(place["img"]!, fit: BoxFit.cover, height: 180, width: double.infinity),
+              Image.network(
+                place["img"]!, 
+                fit: BoxFit.cover, 
+                height: 180, 
+                width: double.infinity,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 180,
+                    width: double.infinity,
+                    color: Colors.grey[300],
+                    child: Icon(Icons.image, size: 50, color: Colors.grey[600]),
+                  );
+                },
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    height: 180,
+                    width: double.infinity,
+                    color: Colors.grey[200],
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                },
+              ),
               Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Column(
