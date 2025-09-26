@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/ai_saathi_provider.dart';
-import '../../services/ai_saathi_service.dart';
 
 class AISaathiChatPage extends StatefulWidget {
   @override
@@ -16,7 +15,30 @@ class _AISaathiChatPageState extends State<AISaathiChatPage> {
   @override
   void initState() {
     super.initState();
-    _addWelcomeMessage();
+    _loadConversationHistory();
+  }
+
+  void _loadConversationHistory() {
+    try {
+      final provider = Provider.of<AISaathiProvider>(context, listen: false);
+      
+      if (provider.conversationHistory.isEmpty) {
+        _addWelcomeMessage();
+      } else {
+        // Load existing conversation history
+        setState(() {
+          _messages.clear();
+          _messages.addAll(provider.conversationHistory.map((msg) => ChatMessage(
+            text: msg.text,
+            isUser: msg.isUser,
+            timestamp: msg.timestamp,
+          )));
+        });
+      }
+    } catch (e) {
+      print('Chat: Error loading conversation history: $e');
+      _addWelcomeMessage();
+    }
   }
 
   void _addWelcomeMessage() {
@@ -53,7 +75,7 @@ class _AISaathiChatPageState extends State<AISaathiChatPage> {
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
-            onPressed: _clearChat,
+            onPressed: _clearConversation,
             tooltip: 'Clear Chat',
           ),
         ],
@@ -218,92 +240,26 @@ class _AISaathiChatPageState extends State<AISaathiChatPage> {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
 
-    // Add user message
-    setState(() {
-      _messages.add(ChatMessage(
-        text: text,
-        isUser: true,
-        timestamp: DateTime.now(),
-      ));
-    });
-
     _messageController.clear();
     _scrollToBottom();
 
-    // Get AI response
+    // Get AI response using provider (which now handles conversation history)
     final provider = Provider.of<AISaathiProvider>(context, listen: false);
     await provider.generateItinerary(text);
 
-    // Add AI response - handle both conversational and itinerary responses
-    String aiResponse = "";
-    
-    if (provider.currentItinerary != null) {
-      // Check if it's an itinerary response (has JSON structure)
-      if (provider.currentItinerary!.itinerary.isNotEmpty) {
-        aiResponse = _formatItineraryResponse(provider.currentItinerary!);
-      } else {
-        // It's a conversational response, get it from the raw response
-        aiResponse = _getConversationalResponse(provider.currentItinerary!);
-      }
-    } else if (provider.error != null) {
-      aiResponse = "Sorry, I encountered an error. Please try again.";
-    } else {
-      aiResponse = "I'd be happy to help you with that! Could you please provide more details?";
-    }
-
+    // Update UI with the latest conversation history
     setState(() {
-      _messages.add(ChatMessage(
-        text: aiResponse,
-        isUser: false,
-        timestamp: DateTime.now(),
-      ));
+      _messages.clear();
+      _messages.addAll(provider.conversationHistory.map((msg) => ChatMessage(
+        text: msg.text,
+        isUser: msg.isUser,
+        timestamp: msg.timestamp,
+      )));
     });
 
     _scrollToBottom();
   }
 
-  String _getConversationalResponse(AISaathiResponse response) {
-    // Get the raw response from metadata if available
-    if (response.metadata.containsKey('raw_response')) {
-      return response.metadata['raw_response'] as String;
-    }
-    
-    // Fallback to a generic response
-    return "I'd be happy to help you with that! Could you please provide more details about what you'd like to know about Jharkhand?";
-  }
-
-  String _formatItineraryResponse(AISaathiResponse response) {
-    if (response.itinerary.isEmpty) {
-      return "I'd be happy to help you with that! Could you please provide more details about what you'd like to know about Jharkhand?";
-    }
-
-    String result = "Here's your personalized Jharkhand experience! 🎉\n\n";
-    
-    for (int i = 0; i < response.itinerary.length; i++) {
-      final day = response.itinerary[i];
-      result += "**Day ${day.dayNumber}: ${day.theme}**\n";
-      result += "${day.summary}\n\n";
-      
-      result += "**Activities:**\n";
-      for (final activity in day.activities) {
-        result += "• ${activity.name} (${activity.timeSlot}, ${activity.duration}h, ₹${activity.cost.toInt()})\n";
-        result += "  ${activity.description}\n";
-        result += "  📍 ${activity.location}\n\n";
-      }
-      
-      result += "**Estimated Cost:** ₹${day.estimatedCost.toInt()}\n";
-      result += "**Duration:** ${day.estimatedDuration} hours\n\n";
-    }
-    
-    if (response.suggestions.isNotEmpty) {
-      result += "**💡 Suggestions:**\n";
-      for (final suggestion in response.suggestions) {
-        result += "• $suggestion\n";
-      }
-    }
-    
-    return result;
-  }
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -317,7 +273,10 @@ class _AISaathiChatPageState extends State<AISaathiChatPage> {
     });
   }
 
-  void _clearChat() {
+  void _clearConversation() {
+    final provider = Provider.of<AISaathiProvider>(context, listen: false);
+    provider.clearConversation();
+    
     setState(() {
       _messages.clear();
       _addWelcomeMessage();

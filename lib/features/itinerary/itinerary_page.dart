@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../services/ai_saathi_service.dart';
 import '../../providers/ai_saathi_provider.dart';
+import '../../models/ai_saathi_models.dart';
 import '../ai_saathi/ai_saathi_chat_page.dart';
 
 class ItineraryPage extends StatefulWidget {
@@ -11,43 +11,34 @@ class ItineraryPage extends StatefulWidget {
 
 class _ItineraryPageState extends State<ItineraryPage> {
   final TextEditingController _inputController = TextEditingController();
-  final AISaathiService _aiService = AISaathiService();
   
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("AI Saathi – Itinerary"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.chat),
-            onPressed: _openChat,
-            tooltip: 'Chat with AI Saathi',
+    return Stack(
+      children: [
+        Consumer<AISaathiProvider>(
+          builder: (context, provider, child) {
+            if (provider.isLoading) {
+              return _buildLoadingState();
+            }
+            
+            if (provider.currentItinerary == null) {
+              return _buildWelcomeState();
+            }
+            
+            return _buildItineraryView(provider.currentItinerary!);
+          },
+        ),
+        Positioned(
+          bottom: 16,
+          right: 16,
+          child: FloatingActionButton(
+            onPressed: _showInputDialog,
+            child: Icon(Icons.auto_awesome),
+            tooltip: 'Generate Itinerary',
           ),
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: _clearItinerary,
-          ),
-        ],
-      ),
-      body: Consumer<AISaathiProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
-            return _buildLoadingState();
-          }
-          
-          if (provider.currentItinerary == null) {
-            return _buildWelcomeState();
-          }
-          
-          return _buildItineraryView(provider.currentItinerary!);
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showInputDialog,
-        child: Icon(Icons.auto_awesome),
-        tooltip: 'Generate Itinerary',
-      ),
+        ),
+      ],
     );
   }
   
@@ -96,41 +87,40 @@ class _ItineraryPageState extends State<ItineraryPage> {
               style: Theme.of(context).textTheme.bodyLarge,
               textAlign: TextAlign.center,
             ),
-                  SizedBox(height: 24),
-                  Column(
-                    children: [
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: _showInputDialog,
-                          icon: Icon(Icons.auto_awesome),
-                          label: Text('Generate Itinerary'),
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: _openChat,
-                          icon: Icon(Icons.chat),
-                          label: Text('Chat with AI Saathi'),
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                            backgroundColor: Colors.green,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Generate personalized itineraries or chat with AI Saathi about anything Jharkhand!',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
+            SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _showInputDialog,
+                icon: Icon(Icons.auto_awesome),
+                label: Text('Generate Itinerary'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                ),
+              ),
+            ),
+            SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _openChat,
+                icon: Icon(Icons.chat, color: Colors.white),
+                label: Text(
+                  'Chat with AI Saathi',
+                  style: TextStyle(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                ),
+              ),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Generate personalized itineraries or chat with AI Saathi about anything Jharkhand!',
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
@@ -140,28 +130,98 @@ class _ItineraryPageState extends State<ItineraryPage> {
   Widget _buildItineraryView(AISaathiResponse itinerary) {
     return Column(
       children: [
-        // Confidence and suggestions header
+        // AI Confidence and Suggestions
         Container(
-          padding: EdgeInsets.all(16),
-          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          margin: EdgeInsets.all(16),
+          padding: EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.blue[50]!,
+                Colors.purple[50]!,
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.blue[100]!),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withOpacity(0.1),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Icon(Icons.psychology, color: Theme.of(context).primaryColor),
-                  SizedBox(width: 8),
+                  Container(
+                    padding: EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[100],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.psychology,
+                      color: Colors.blue[700],
+                      size: 20,
+                    ),
+                  ),
+                  SizedBox(width: 12),
                   Text(
                     'AI Confidence: ${(itinerary.confidence * 100).toInt()}%',
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.blue[800],
+                    ),
                   ),
                 ],
               ),
               if (itinerary.suggestions.isNotEmpty) ...[
-                SizedBox(height: 8),
+                SizedBox(height: 16),
                 Text(
-                  'Suggestions: ${itinerary.suggestions.join(', ')}',
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  '💡 Suggestions:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Colors.grey[700],
+                  ),
                 ),
+                SizedBox(height: 8),
+                ...itinerary.suggestions.map((suggestion) => Container(
+                  margin: EdgeInsets.only(bottom: 6),
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.lightbulb_outline,
+                        size: 16,
+                        color: Colors.orange[600],
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          suggestion,
+                          style: TextStyle(
+                            color: Colors.grey[700],
+                            fontSize: 13,
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
               ],
             ],
           ),
@@ -177,94 +237,387 @@ class _ItineraryPageState extends State<ItineraryPage> {
             },
           ),
         ),
+        // Chat button at the bottom
+        Container(
+          padding: EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _openChat,
+                  icon: Icon(Icons.chat, color: Colors.white),
+                  label: Text(
+                    'Chat with AI Saathi',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 2,
+                  ),
+                ),
+              ),
+              SizedBox(width: 12),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: IconButton(
+                  onPressed: _clearItinerary,
+                  icon: Icon(Icons.refresh, color: Colors.grey[700]),
+                  tooltip: 'Clear Itinerary',
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
   
   Widget _buildDayCard(DayPlan day) {
-    return Card(
-      margin: EdgeInsets.all(8),
-      child: ExpansionTile(
-        title: Text('Day ${day.dayNumber}: ${day.theme}'),
-        subtitle: Text(day.summary),
-        children: [
-          Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Day info
-                Row(
-                  children: [
-                    Icon(Icons.schedule, size: 16),
-                    SizedBox(width: 8),
-                    Text('Duration: ${day.estimatedDuration} hours'),
-                    Spacer(),
-                    Icon(Icons.attach_money, size: 16),
-                    SizedBox(width: 8),
-                    Text('Cost: ₹${day.estimatedCost.toInt()}'),
-                  ],
-                ),
-                SizedBox(height: 16),
-                
-                // Activities
-                Text(
-                  'Activities:',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                SizedBox(height: 8),
-                ...day.activities.map((activity) => _buildActivityCard(activity)),
-              ],
-            ),
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            Colors.grey[50]!,
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: Offset(0, 4),
           ),
         ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: ExpansionTile(
+          tilePadding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          childrenPadding: EdgeInsets.only(bottom: 16),
+          leading: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Text(
+                '${day.dayNumber}',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ),
+          title: Text(
+            'Day ${day.dayNumber}: ${day.theme}',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Colors.grey[800],
+            ),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 8),
+              Text(
+                day.summary,
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                ),
+              ),
+              SizedBox(height: 12),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.schedule, size: 14, color: Colors.blue[700]),
+                        SizedBox(width: 4),
+                        Text(
+                          '${day.estimatedDuration}h',
+                          style: TextStyle(
+                            color: Colors.blue[700],
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.green[50],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.currency_rupee, size: 14, color: Colors.green[700]),
+                        SizedBox(width: 4),
+                        Text(
+                          '${day.estimatedCost.toInt()}',
+                          style: TextStyle(
+                            color: Colors.green[700],
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Activities',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  ...day.activities.map((activity) => _buildActivityCard(activity)),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
   
   Widget _buildActivityCard(Activity activity) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 4),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Theme.of(context).primaryColor,
-          child: Icon(Icons.place, color: Colors.white, size: 16),
-        ),
-        title: Text(activity.name),
-        subtitle: Column(
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(activity.description),
-            SizedBox(height: 4),
-            Wrap(
+            Row(
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.access_time, size: 12),
-                    SizedBox(width: 4),
-                    Text('${activity.timeSlot} (${activity.duration}h)'),
-                  ],
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: _getActivityColor(activity.type).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    _getActivityIcon(activity.type),
+                    size: 16,
+                    color: _getActivityColor(activity.type),
+                  ),
                 ),
-                SizedBox(width: 16),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.attach_money, size: 12),
-                    SizedBox(width: 4),
-                    Text('₹${activity.cost.toInt()}'),
-                  ],
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        activity.name,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.grey[800],
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        activity.location,
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _getActivityColor(activity.type).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    activity.type,
+                    style: TextStyle(
+                      color: _getActivityColor(activity.type),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 12),
+            Text(
+              activity.description,
+              style: TextStyle(
+                color: Colors.grey[700],
+                fontSize: 14,
+                height: 1.4,
+              ),
+            ),
+            SizedBox(height: 12),
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.schedule, size: 12, color: Colors.blue[700]),
+                      SizedBox(width: 4),
+                      Text(
+                        '${activity.duration}h',
+                        style: TextStyle(
+                          color: Colors.blue[700],
+                          fontWeight: FontWeight.w600,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 8),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.green[50],
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.currency_rupee, size: 12, color: Colors.green[700]),
+                      SizedBox(width: 4),
+                      Text(
+                        '${activity.cost.toInt()}',
+                        style: TextStyle(
+                          color: Colors.green[700],
+                          fontWeight: FontWeight.w600,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 8),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.orange[50],
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.access_time, size: 12, color: Colors.orange[700]),
+                      SizedBox(width: 4),
+                      Text(
+                        activity.timeSlot,
+                        style: TextStyle(
+                          color: Colors.orange[700],
+                          fontWeight: FontWeight.w600,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ],
         ),
-        trailing: Chip(
-          label: Text(activity.type),
-          backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-        ),
       ),
     );
+  }
+
+  Color _getActivityColor(String type) {
+    switch (type.toLowerCase()) {
+      case 'sightseeing':
+        return Colors.blue;
+      case 'adventure':
+        return Colors.red;
+      case 'food':
+        return Colors.orange;
+      case 'cultural':
+        return Colors.purple;
+      case 'shopping':
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getActivityIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'sightseeing':
+        return Icons.visibility;
+      case 'adventure':
+        return Icons.sports;
+      case 'food':
+        return Icons.restaurant;
+      case 'cultural':
+        return Icons.museum;
+      case 'shopping':
+        return Icons.shopping_bag;
+      default:
+        return Icons.place;
+    }
   }
   
   void _showInputDialog() {
